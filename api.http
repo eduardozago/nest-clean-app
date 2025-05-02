@@ -28,6 +28,12 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-    "email": "johddoe2@example.com",
-    "password": "123456"
+    "title": "New question 2",
+    "content": "A new question for test"
 }
+
+###
+# @name fetch_recent_questions
+GET {{baseUrl}}/questions?page=2
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
