@@ -6,7 +6,7 @@ import { vi } from 'vitest'
 
 class CustomAggregateCreated implements DomainEvent {
   public ocurredAt: Date
-  private aggregate: CustomAggregate // eslint-disable-line
+  private aggregate: CustomAggregate
   constructor(aggregate: CustomAggregate) {
     this.aggregate = aggregate
     this.ocurredAt = new Date()
@@ -24,7 +24,7 @@ class CustomAggregate extends AggregateRoot<null> {
   }
 }
 describe('domain events', () => {
-  it('should be able to dispatch and listen to events', async () => {
+  it('should be able to dispatch and listen to events', () => {
     const callbackSpy = vi.fn()
     // Subscriber cadastrado (ouvindo o evento de "resposta criada")
     DomainEvents.register(callbackSpy, CustomAggregateCreated.name)
