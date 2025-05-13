@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Post,
@@ -7,9 +8,9 @@ import {
 } from '@nestjs/common'
 import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { JwtService } from '@nestjs/jwt'
-import { PrismaService } from '@/infra/http/database/prisma/prisma.service'
-import { compare } from 'bcryptjs'
+import { AuthenticateStudentUseCase } from '@/domain/forum/application/use-cases/authenticate-student'
+import { InvalidCredentialError } from '@/domain/forum/application/use-cases/errors/invalid-credentials-error'
+import { Public } from '@/infra/auth/public'
 
 const authenticateBodySchema = z.object({
   email: z.string().email(),
@@ -19,34 +20,32 @@ const authenticateBodySchema = z.object({
 type AuthenticateBodySchema = z.infer<typeof authenticateBodySchema>
 
 @Controller('/sessions')
+@Public()
 export class AuthenticateController {
-  constructor(
-    private jwt: JwtService,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private authenticateUseCase: AuthenticateStudentUseCase) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe(authenticateBodySchema))
   async handle(@Body() body: AuthenticateBodySchema) {
     const { email, password } = body
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
+    const result = await this.authenticateUseCase.execute({
+      email,
+      password,
     })
 
-    if (!user) {
-      throw new UnauthorizedException()
+    if (result.isLeft()) {
+      const error = result.value
+
+      switch (error.constructor) {
+        case InvalidCredentialError:
+          throw new UnauthorizedException(error.message)
+        default:
+          throw new BadRequestException(error.message)
+      }
     }
 
-    const isPasswordValid = await compare(password, user.password)
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException()
-    }
-
-    const accessToken = this.jwt.sign({ sub: user.id })
+    const { accessToken } = result.value
 
     return {
       access_token: accessToken,
