@@ -35,7 +35,7 @@ export class QuestionCommentFactory {
   ): Promise<QuestionComment> {
     const questioncomment = makeQuestionComment(data)
 
-    await this.prisma.user.create({
+    await this.prisma.comment.create({
       data: PrismaQuestionCommentMapper.toPrisma(questioncomment),
     })
 
