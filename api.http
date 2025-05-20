@@ -37,3 +37,14 @@ Authorization: Bearer {{authToken}}
 GET {{baseUrl}}/questions?page=1
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+###
+# @name edit_question
+PUT {{baseUrl}}/questions/ce1c92b5-5406-4462-ad71-e431a984715a
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "title": "New question 33",
+    "content": "A question edited"
+}
