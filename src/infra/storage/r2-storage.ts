@@ -5,7 +5,9 @@ import {
 import { EnvService } from '../env/env.service'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { randomUUID } from 'node:crypto'
+import { Injectable } from '@nestjs/common'
 
+@Injectable()
 export class R2Storage implements Uploader {
   private client: S3Client
 
