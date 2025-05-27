@@ -1,6 +1,5 @@
 import { AppModule } from '@/infra/app.module'
 import { DatabaseModule } from '@/infra/database/database.module'
-import { PrismaQuestionMapper } from '@/infra/database/prisma/mappers/prisma-question-mapper'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { INestApplication } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
@@ -85,8 +84,6 @@ describe('Edit Question (E2E)', () => {
         title: 'New title',
       },
     })
-
-    expect(questionOnDatabase).toBeTruthy()
 
     expect(questionOnDatabase).toBeTruthy()
 
