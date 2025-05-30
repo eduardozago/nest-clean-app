@@ -69,10 +69,17 @@ describe('Fetch Questions Comments', () => {
   })
 
   it('should be able to fetch paginated questions comments', async () => {
+    const student = makeStudent({
+      name: 'John Doe',
+    })
+
+    inMemoryStudentsRepository.items.push(student)
+
     for (let i = 1; i <= 22; i++) {
       await inMemoryQuestionCommentsRepository.create(
         makeQuestionComment({
           questionId: new UniqueEntityID('question-1'),
+          authorId: student.id,
         }),
       )
     }
