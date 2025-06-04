@@ -1,0 +1,62 @@
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  ForbiddenException,
+  HttpCode,
+  NotFoundException,
+  Param,
+  Put,
+} from '@nestjs/common'
+import { CurrentUser } from '@/infra/auth/current-user.decorator'
+import { UserPayload } from '@/infra/auth/jwt.strategy'
+import { z } from 'zod'
+import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error'
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error'
+import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer'
+
+const editAnswerBodySchema = z.object({
+  content: z.string(),
+  attachments: z.array(z.string()).default([]),
+})
+
+const bodyValidationPipe = new ZodValidationPipe(editAnswerBodySchema)
+
+type EditAnswerBodySchema = z.infer<typeof editAnswerBodySchema>
+
+@Controller('/answers/:id')
+export class EditAnswerController {
+  constructor(private editAnswer: EditAnswerUseCase) {}
+
+  @Put()
+  @HttpCode(204)
+  async handle(
+    @Body(bodyValidationPipe) body: EditAnswerBodySchema,
+    @CurrentUser() user: UserPayload,
+    @Param('id') answerId: string,
+  ) {
+    const { content, attachments } = body
+    const userId = user.sub
+
+    const result = await this.editAnswer.execute({
+      answerId,
+      authorId: userId,
+      content,
+      attachmentsIds: attachments,
+    })
+
+    if (result.isLeft()) {
+      const error = result.value
+
+      switch (error.constructor) {
+        case ResourceNotFoundError:
+          throw new NotFoundException(error.message)
+        case NotAllowedError:
+          throw new ForbiddenException(error.message)
+        default:
+          throw new BadRequestException(error.message)
+      }
+    }
+  }
+}
